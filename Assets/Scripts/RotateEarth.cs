@@ -5,13 +5,7 @@ using UnityEngine;
 public class RotateEarth : MonoBehaviour {
 
 	//球体属性
-	private float r = 10f;
-	private float size = 2.2f;
-	private float distance = 10f;
-	public bool isCity = false;
 	public GameObject textObject;
-	public ArrayList coutries;
-	public Transform cameraTarget;
 
 	//是否被拖拽；
 	private bool onDrag = false;
@@ -31,56 +25,25 @@ public class RotateEarth : MonoBehaviour {
 	//滑动距离（鼠标）;
 	private float cXY;
 
+	private float oldRotate;
+	private float newRotate;
+
 	// Use this for initialization
 	void Start () {
 		
-		coutries = new ArrayList ();
-
-		for (int i = 0; i < 10; i++) {
-			coutries.Add ("China");
-		}
-
-		createSphere (coutries.Count);
-
-		/*
-		foreach (string countryName in Constrant.pros) {
-			coutries.Add (countryName);
-		}
-
-		
-		*/
-	}
-
-	public void createSphere(float N){
-		float inc = Mathf.PI * (3 - Mathf.Sqrt (5));
-		float off = 2 / N;
-		for (int i = 0; i < (N); i++) {
-			float y = i * off - 1 + (off / 2);
-			float r = Mathf.Sqrt (1 - y * y);
-			float phi = i * inc;
-			Vector3 pos = new Vector3 ((Mathf.Cos (phi) * r * size),y * size,Mathf.Sin(phi)*r*size);
-
-			GameObject text = (GameObject)Instantiate (textObject, pos, Quaternion.identity);
-
-			text.transform.parent = gameObject.transform;
-
-			text.transform.localScale = new Vector3 (0.5f, 0.5f,0.5f);
-
-			foreach (Transform child in text.transform) {
-				TextMesh tm = (TextMesh)child.GetComponent<TextMesh> ();
-				tm.text = "China";
-			}
-
-		}
 	}
 
 	// Update is called once per frame
 	void Update () {
 
-
+		float rigidSpeed = Rigid ();
 
 		//根据计算出的阻尼和X，Y轴的偏移来旋转地球;
-		gameObject.transform.Rotate (new Vector3 (axisY, axisX, 0) * Rigid (), Space.World);
+		gameObject.transform.Rotate (new Vector3 (axisY, axisX, 0) * rigidSpeed, Space.World);
+
+		if (rigidSpeed >= 0) {
+			//textObject.SendMessage ("getMessage", gameObject.transform.rotation);
+		}
 
 		//如果鼠标离开屏幕则标记为已经不再拖拽;
 		if(!Input.GetMouseButton(0)){
@@ -93,6 +56,8 @@ public class RotateEarth : MonoBehaviour {
 	void OnMouseDown(){
 		axisX = 0f;
 		axisY = 0f;
+		oldRotate = 0;
+		Debug.Log ("click the ball");
 	}
 
 	//鼠标拖拽时的操作;
@@ -100,7 +65,6 @@ public class RotateEarth : MonoBehaviour {
 		onDrag = true;
 		axisX = -Input.GetAxis ("Mouse X");
 		axisY = Input.GetAxis ("Mouse Y");
-
 		cXY = Mathf.Sqrt (axisX * axisX + axisY * axisY);
 	}
 
